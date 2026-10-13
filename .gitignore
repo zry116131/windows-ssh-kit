@@ -1,0 +1,14 @@
+# Never publish credentials, target-machine reports or local build output.
+*.pub
+*.pem
+*.key
+id_*
+Logs/
+**/Logs/
+*.log
+*.evtx
+*.bak
+dist/
+payloads/*.zip
+__pycache__/
+.DS_Store

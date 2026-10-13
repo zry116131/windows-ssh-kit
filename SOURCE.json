@@ -1,0 +1,19 @@
+{
+  "release": "10.0.0.0p2-Preview",
+  "release_channel": "Preview, upstream marks non-production ready",
+  "release_url": "https://github.com/PowerShell/Win32-OpenSSH/releases/tag/10.0.0.0p2-Preview",
+  "verified": "2026-10-13",
+  "payloads": [
+    {
+      "file": "OpenSSH-ARM64.zip",
+      "source": "https://github.com/PowerShell/Win32-OpenSSH/releases/download/10.0.0.0p2-Preview/OpenSSH-ARM64.zip",
+      "sha256": "698c6aec31c1dd0fb996206e8741f4531a97355686b5431ef347d531b07fcd42"
+    },
+    {
+      "file": "OpenSSH-Win64.zip",
+      "source": "https://github.com/PowerShell/Win32-OpenSSH/releases/download/10.0.0.0p2-Preview/OpenSSH-Win64.zip",
+      "sha256": "23f50f3458c4c5d0b12217c6a5ddfde0137210a30fa870e98b29827f7b43aba5"
+    }
+  ],
+  "package_version": "v1.0.0"
+}
