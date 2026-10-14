@@ -13,7 +13,12 @@ ROOT = Path(__file__).resolve().parent.parent
 
 
 def run(args):
-    return subprocess.run(args, stdin=subprocess.DEVNULL, capture_output=True, timeout=60)
+    env = os.environ.copy()
+    # Actions runs Python under pwsh. A PS 5.1 child launched through Python
+    # otherwise inherits PS 7's module path and may load incompatible modules.
+    if os.name == 'nt' and Path(args[0]).name.lower() == 'powershell.exe':
+        env.pop('PSModulePath', None)
+    return subprocess.run(args, stdin=subprocess.DEVNULL, capture_output=True, timeout=60, env=env)
 
 
 def main():
