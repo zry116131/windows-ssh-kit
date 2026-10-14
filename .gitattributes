@@ -4,3 +4,4 @@
 *.json text eol=lf
 *.py text eol=lf
 *.yml text eol=lf
+*.command text eol=lf

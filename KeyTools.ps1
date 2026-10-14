@@ -2,7 +2,7 @@
 # Read a single Ed25519 public key without printing rejected input.
 function Read-LoginPublicKey([string]$Path) {
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) {
-        throw 'Missing windows-admin.pub. Run 00-Import-Public-Key.cmd or copy your Ed25519 .pub file next to Setup-SSH.ps1 as windows-admin.pub. Never copy the private key.'
+        throw 'Missing windows-admin.pub. On the CLIENT computer, run 00-Generate-Client-Key.cmd (Windows) or .command (Mac) first; then take the paired kit to this target. Existing keys: use 05-Import-Public-Key.cmd. Never copy the private key.'
     }
     if ((Get-Item -LiteralPath $Path).Length -gt 16KB) { throw 'Public-key file is too large.' }
     $text = [IO.File]::ReadAllText($Path).Trim()

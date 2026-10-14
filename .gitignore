@@ -12,3 +12,5 @@ dist/
 payloads/*.zip
 __pycache__/
 .DS_Store
+CLIENT-CONNECTION.txt
+.write-test-*

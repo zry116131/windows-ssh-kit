@@ -4,33 +4,30 @@ Windows x64 / ARM64 离线 SSH 启用、诊断和修复工具。支持从 U 盘�
 
 **下载：[最新 Release](https://github.com/zry116131/windows-ssh-kit/releases/latest)**，选择 `Windows-SSH-Kit-*-x64-ARM64.zip`。GitHub 自动生成的 Source code ZIP 不含离线安装文件。
 
-## 快速开始
+## 快速开始：生成密钥 → 带公钥到目标机 → 启用 SSH
 
-1. 将 Release ZIP **完整解压**到 Windows 本地磁盘或 U 盘，保留 `payloads` 目录。
-2. 在用于远程连接的电脑上准备 Ed25519 密钥。只将 `.pub` 公钥文件带到 Windows，私钥留在连接端。
-3. 双击 **00-Import-Public-Key.cmd**，选择自己的 `.pub` 文件。也可以直接将公钥复制到工具目录并命名为 `windows-admin.pub`。
-4. 双击 **01-Enable-SSH.cmd**，同意 UAC 提权。已有 SSH 启动故障可使用 **04-Repair-SSH.cmd**；两者均包含检测和自动修复。
-5. 记下窗口显示的 `SSH login name`、Windows IP、主机公钥指纹。在连接端执行：
+**连接端**是以后发起 SSH 连接的电脑；**目标端**是要开启 SSH 的 Windows。先在连接端生成配套密钥，私钥留在连接端，U 盘只携带自动配好的公钥。
 
-```sh
-ssh -i PATH_TO_YOUR_PRIVATE_KEY -l WINDOWS_USERNAME WINDOWS_IP
-```
+1. 在连接端将 Release ZIP **完整解压到 U 盘**，保留 `payloads` 目录。
+2. 在连接端运行 **00-Generate-Client-Key**：Windows 双击 `.cmd`；Mac 双击 `.command`。按提示设置私钥口令，也可按两次回车不设口令。Mac 如无法双击，可在终端输入 `bash ` 后拖入 `.command` 文件并回车。
+3. 工具将新密钥保存在连接端用户目录的 `.ssh/windows-ssh-kit-唯一标识/`，自动把公钥写入 U 盘的 `windows-admin.pub`。同时生成 `CLIENT-CONNECTION.txt`，包含配套私钥路径和连接命令，不包含私钥内容。
+4. 将 U 盘拿到目标 Windows，双击 **01-Enable-SSH.cmd** 并同意 UAC。已有 SSH 故障可以使用 **04-Repair-SSH.cmd**。无需再选择或粘贴公钥。SSH 账号是 UAC 提权后实际执行脚本的本地管理员。
+5. 记下窗口显示的 `SSH login name`、Windows IP 和主机公钥指纹。回到连接端，按 `CLIENT-CONNECTION.txt` 中的命令填写登录名和 IP 后连接，并核对首次显示的主机指纹。
 
-首次连接时核对主机指纹。账号使用 **UAC 提权后实际执行脚本的本地管理员**；如果输入另一管理员的凭据，登录名就是那个管理员。不会创建账号。
+生成器会保留已有密钥；工具目录已包含公钥或连接说明时会停止，不会静默换钥。需要配对另一台连接端时，使用一份全新解压的包。连接端生成器不需要管理员权限。
 
-需要新建密钥时，在连接端执行以下命令，并按提示设置私钥口令（先确认同名文件不存在）：
+**不要在目标机上生成登录密钥后只把公钥带回连接端**：发起 SSH 的电脑需要私钥。已配对的同一份 U 盘包可用于多台目标 Windows，它们会信任同一把连接端公钥。服务器自己的主机密钥由安装流程另行处理。
 
-```sh
-ssh-keygen -t ed25519 -f ~/.ssh/windows_admin -C windows-admin
-```
+已有自己的 Ed25519 密钥时，可以跳过生成器，在目标 Windows 上双击可选入口 **05-Import-Public-Key.cmd** 选择 `.pub`；也可以直接复制并重命名为 `windows-admin.pub`。未配对的公开发行包不含默认密钥。
 
-`windows_admin.pub` 是公钥，`windows_admin` 是私钥。本项目不附带默认公钥，不自动生成或传输登录私钥。
+Windows 连接端优先使用系统 `ssh-keygen`；系统没有安装 SSH 客户端时，从固定哈希的离线载荷中临时提取对应 x64／ARM64 的工具，生成后清理临时程序。Mac 使用系统 `ssh-keygen`。生成过程不上传密钥。
 
 ## 操作入口
 
 | 文件 | 用途 |
 |---|---|
-| `00-Import-Public-Key.cmd` | 导入一把 Ed25519 公钥，已有不同公钥时停止 |
+| `00-Generate-Client-Key.cmd` / `.command` | 在连接端生成专用密钥，自动将公钥配入安装包 |
+| `05-Import-Public-Key.cmd` | 可选：使用已有 Ed25519 公钥 |
 | `01-Enable-SSH.cmd` | 离线安装／复用已有服务，配置公钥并启动 |
 | `02-Check-SSH.cmd` | 收集诊断、检查配置和服务，不自动修复 |
 | `03-Revoke-Key.cmd` | 删除本工具的公钥、Match 配置、状态文件和防火墙规则 |
@@ -52,7 +49,7 @@ E:\Windows-SSH-Kit\Logs\电脑名_时间_随机标识.zip
 
 U 盘不可写时，会提示并回退到 `%TEMP%\Windows-SSH-Logs`，需要手动复制回来。运行时不要拔盘；断电或进程被强制结束时，最终 ZIP 可能没有生成，已写好的日志目录仍可保留。
 
-日志包含用户名、IP、文件路径、SSH 配置和事件记录，**请先检查和脱敏，再公开到 GitHub Issue**。工具不复制登录私钥或主机私钥；不要将自己的整个工具目录、日志或密钥目录直接提交到仓库。
+日志包含用户名、IP、文件路径、SSH 配置和事件记录，**请先检查和脱敏，再公开到 GitHub Issue**。工具不复制登录私钥或主机私钥；不要将自己配对后的工具目录、`CLIENT-CONNECTION.txt`、日志或密钥目录直接提交到仓库。
 
 ## 自动修复范围
 
@@ -113,6 +110,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "E:\Windows-SSH-Kit\Veri
 python tools/build_release.py --download-payloads
 pwsh -NoProfile -File tests/Test-Repair-Package.ps1
 pwsh -NoProfile -File tests/Test-PublicKey.ps1
+python tests/test_client_pairing.py
 ```
 
 在 macOS／Linux 上额外运行模拟 Windows 接口的诊断与修复测试：
@@ -121,4 +119,4 @@ pwsh -NoProfile -File tests/Test-PublicKey.ps1
 pwsh -NoProfile -File tests/Test-Repair-Diagnostics.ps1
 ```
 
-输出在 `dist/`。打包程序采用明确的文件清单，即使目录里已有个人 `windows-admin.pub` 或 `Logs`，也不会被打包。Release 同时提供整个 ZIP 的 `.sha256`；包内 `SHA256SUMS.txt` 校验各交付文件。CI 在 Linux／Windows 检查，Windows 额外用 PowerShell 5.1 验证。
+输出在 `dist/`。打包程序采用明确的文件清单，即使目录里已有个人 `windows-admin.pub`、`Logs` 或 `CLIENT-CONNECTION.txt`，也不会被打包。Release 同时提供整个 ZIP 的 `.sha256`；包内 `SHA256SUMS.txt` 校验各交付文件。CI 在 Linux／Windows 检查，Windows 额外用 PowerShell 5.1 验证。

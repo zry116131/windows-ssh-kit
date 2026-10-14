@@ -23,6 +23,8 @@ jobs:
         run: |
           ./tests/Test-Repair-Package.ps1
           ./tests/Test-PublicKey.ps1
+      - name: Verify generated key pairing and private-key isolation
+        run: python tests/test_client_pairing.py
       - name: Test diagnostics and repair with mocked Windows APIs
         if: runner.os == 'Linux'
         shell: pwsh
